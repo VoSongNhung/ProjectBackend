@@ -5,8 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class SpendingManaApplication {
-	// test
-	//test
+
 	public static void main(String[] args) {
 		SpringApplication.run(SpendingManaApplication.class, args);
 	}
