@@ -25,7 +25,7 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToOne(mappedBy ="user", cascade = CascadeType.REMOVE)
+    @OneToOne(mappedBy ="user")
     @JsonIgnore
     private Wallet wallet;
 }
