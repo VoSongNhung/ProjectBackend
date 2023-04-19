@@ -18,7 +18,7 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long walletId;
     private Integer total;
-    private byte icon;
+    private String icon;
     private Integer cash;
     private Integer creadit;
 
@@ -26,11 +26,11 @@ public class Wallet {
     @JoinColumn(name = "currency_id")
     private Currency currency;
 
-    @OneToMany(mappedBy = "wallet",cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "wallet")
     @JsonIgnore
     private List<Card> cardList;
 
-    @OneToMany(mappedBy = "wallet",cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "wallet")
     @JsonIgnore
     private List<Transaction> transactionList;
 
