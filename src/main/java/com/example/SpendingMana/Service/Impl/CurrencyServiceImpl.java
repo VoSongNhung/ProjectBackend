@@ -1,7 +1,7 @@
 package com.example.SpendingMana.Service.Impl;
 
+import com.example.SpendingMana.Constants.FileConstants;
 import com.example.SpendingMana.Service.CurrencyService;
-import com.example.SpendingMana.common.Constant;
 import com.example.SpendingMana.entity.Currency;
 import com.example.SpendingMana.respository.CurrencyRepository;
 import org.apache.poi.ss.usermodel.CellType;
@@ -24,12 +24,12 @@ import java.util.List;
 public class CurrencyServiceImpl implements CurrencyService {
     @Autowired
     CurrencyRepository currencyRepo;
-    private static final String FILE_PATH = Constant.EXCEL_PARH +"/currency.xlsx";
+    private static final String FILE_PATH = FileConstants.EXCEL_PARH +"/currency.xlsx";
 
     @Override
     public Boolean exportCurrency() {
         try (Workbook workbook = new XSSFWorkbook()) {
-            File dataDir = new File(Constant.EXCEL_PARH);
+            File dataDir = new File(FileConstants.EXCEL_PARH);
             if (!dataDir.exists()) {
                 dataDir.mkdir();
             }

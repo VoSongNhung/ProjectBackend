@@ -1,10 +1,10 @@
 package com.example.SpendingMana.Service.Impl;
 
 import com.example.SpendingMana.Service.WalletService;
+import com.example.SpendingMana.dto.WalletDTO;
 import com.example.SpendingMana.entity.Currency;
 import com.example.SpendingMana.entity.Wallet;
 import com.example.SpendingMana.error.DataNotFoundException;
-import com.example.SpendingMana.payload.Request.WalletRequest;
 import com.example.SpendingMana.respository.CurrencyRepository;
 import com.example.SpendingMana.respository.WalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +17,13 @@ public class WalletServiceImpl implements WalletService {
     @Autowired
     CurrencyRepository currencyRepo;
     @Override
-    public Wallet create(WalletRequest walletRequest) {
+    public Wallet create(WalletDTO walletDTO) {
         Wallet wallet = new Wallet();
-        wallet.setIcon(walletRequest.getIcon());
+        wallet.setIcon(walletDTO.getIcon());
         wallet.setCreadit(0);
-        wallet.setCash(walletRequest.getCash());
-        wallet.setTotal(walletRequest.getCash() + 0);
-        Currency currency = currencyRepo.findById(walletRequest.getCurrencyId()).orElseThrow(() -> new DataNotFoundException("currency not found"));
+        wallet.setCash(walletDTO.getCash());
+        wallet.setTotal(walletDTO.getCash() + 0);
+        Currency currency = currencyRepo.findById(walletDTO.getCurrencyId()).orElseThrow(() -> new DataNotFoundException("currency not found"));
         wallet.setCurrency(currency);
         return walletRepo.save(wallet);
     }
@@ -31,5 +31,12 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public Page<Wallet> getAll(Pageable pageable) {
         return walletRepo.findAll(pageable);
+    }
+
+    @Override
+    public boolean deleteWallet(Long id) {
+        Wallet wallet = walletRepo.findById(id).orElseThrow(() -> new DataNotFoundException("Wallet not found"));
+        walletRepo.delete(wallet);
+        return true;
     }
 }
