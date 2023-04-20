@@ -11,6 +11,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -25,6 +26,32 @@ public class CurrencyServiceImpl implements CurrencyService {
     @Autowired
     CurrencyRepository currencyRepo;
     private static final String FILE_PATH = FileConstants.EXCEL_PARH +"/currency.xlsx";
+
+    @Override
+    public List<Currency> listCurrency() {
+        return currencyRepo.findAll();
+    }
+
+    @Override
+    public Currency addCurrency(Currency currency) {
+        return currencyRepo.save(currency);
+    }
+
+    @Override
+    public Currency updateCurrency(Currency currency, Long id) {
+        Currency findbyId = currencyRepo.findById(id).get();
+        if(!findbyId.equals(null)){
+            currency.setCurrency_id(id);
+            return currencyRepo.save(currency);
+        }
+        return null;
+    }
+
+    @Override
+    public void deleteCurrency(Long id) {
+            currencyRepo.deleteById(id);
+            System.out.println("Category id: "+ id + " deleted");
+    }
 
     @Override
     public Boolean exportCurrency() {

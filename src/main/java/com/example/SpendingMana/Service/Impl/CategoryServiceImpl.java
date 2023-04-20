@@ -2,6 +2,7 @@ package com.example.SpendingMana.Service.Impl;
 
 import com.example.SpendingMana.Service.CategoryService;
 import com.example.SpendingMana.dto.CategoryDTO;
+import com.example.SpendingMana.dto.CategoryUpdateDTO;
 import com.example.SpendingMana.entity.*;
 import com.example.SpendingMana.error.DataNotFoundException;
 import com.example.SpendingMana.model.Transactionmodel;
@@ -12,7 +13,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CategoryServiceImpl implements CategoryService {
     @Autowired
     CategoryRepository categoryRepo;
@@ -35,6 +38,16 @@ public class CategoryServiceImpl implements CategoryService {
         category.setType(categoryDTO.getType());
         return categoryRepo.save(category);
     }
+
+    @Override
+    public Category updateCategory(CategoryUpdateDTO categoryUpdateDTO, Long id) {
+        Category category = categoryRepo.findById(id).orElseThrow(() -> new DataNotFoundException("category not found"));
+        category.setNameCategory(categoryUpdateDTO.getNameCategory());
+        category.setIcon(categoryUpdateDTO.getIcon());
+        categoryRepo.save(category);
+        return category;
+    }
+
     @Override
     public boolean deleteCategory(Long id) {
         Category category = categoryRepo.findById(id).orElseThrow(() -> new DataNotFoundException("category not found"));
