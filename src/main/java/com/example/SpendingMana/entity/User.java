@@ -21,10 +21,6 @@ public class User {
     private  String username;
     private String password;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
-    @JoinColumn(name = "role_id")
-    private Role role;
-
     @OneToOne(mappedBy ="user")
     @JsonIgnore
     private Wallet wallet;

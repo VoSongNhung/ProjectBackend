@@ -14,7 +14,6 @@ import java.util.List;
 public class CardBrandServiceImpl implements CardBrandService {
     @Autowired
     CardBrandRepository cardBrandRepository;
-
     @Override
     public List<CardBrand> listCardBrand() {
         return cardBrandRepository.findAll();

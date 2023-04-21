@@ -64,21 +64,6 @@ public class KeycloakConfig extends KeycloakWebSecurityConfigurerAdapter
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-    public String getIdClient(){
-        Keycloak keycloak = KeycloakBuilder.builder()
-                .serverUrl("http://localhost:8080")
-                .realm("testrealm")
-                .clientId("spring_test")
-//                .clientSecret("Z3N6OroqpExuPEEKFHZs5uKEWEyGN57B")
-                .username("nhungvo")
-                .password("321123")
-                .build();
-
-        String clientId = "spring_test"; // Replace with the actual client ID
-        ClientRepresentation client = keycloak.realm("testrealm").clients().findByClientId(clientId).get(0);
-        return client.getId();
-    }
-
     @Override
     protected void configure(HttpSecurity http) throws Exception
     {
@@ -89,7 +74,7 @@ public class KeycloakConfig extends KeycloakWebSecurityConfigurerAdapter
 ////                .antMatchers("/user/*").hasRole("employee")
 //                .anyRequest().permitAll();
                 .authorizeRequests()
-                .antMatchers("/currency/*","/category/*")
+                .antMatchers("/*")
                 .permitAll()
                 .anyRequest().authenticated();
         http.csrf().disable();
