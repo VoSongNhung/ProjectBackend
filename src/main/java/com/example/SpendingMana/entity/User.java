@@ -14,12 +14,16 @@ import javax.persistence.*;
 @Table(name = "user")
 public class User {
     @Id
-    private Long keycloakId;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Long id;
+
+    private String keycloakId;
 
     private String firstname;
     private String lastname;
     private  String username;
-    private String password;
+    private String email;
+    private String roles;
 
     @OneToOne(mappedBy ="user")
     @JsonIgnore

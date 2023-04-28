@@ -22,19 +22,19 @@ public class Wallet {
     private Integer cash;
     private Integer creadit;
 
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JoinColumn(name = "currency_id")
     private Currency currency;
 
-    @OneToMany(mappedBy = "wallet")
+    @OneToMany(mappedBy = "wallet",cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JsonIgnore
     private List<Card> cardList;
 
-    @OneToMany(mappedBy = "wallet")
+    @OneToMany(mappedBy = "wallet", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JsonIgnore
     private List<Transaction> transactionList;
 
-    @OneToOne
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JoinColumn(name = "keycloak_id")
     private User user;
 }

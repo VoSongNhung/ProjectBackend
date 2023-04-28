@@ -28,7 +28,7 @@ public class Card {
     @JoinColumn(name = "wallet_id")
     private Wallet wallet;
 
-    @OneToMany(mappedBy = "card",cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "card", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
     @JsonIgnore
     private List<Transaction> transactionList;
 }

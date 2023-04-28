@@ -55,6 +55,8 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     @Override
     public Boolean exportCurrency() {
+        //Workbook đại diện cho một bảng tính, hay một file Excel.
+        //XSSF (XML SpereadSheet Format) : Đọc và ghi định dạng file Open Office XML (XLSX - dạng excel mới).
         try (Workbook workbook = new XSSFWorkbook()) {
             File dataDir = new File(FileConstants.EXCEL_PARH);
             if (!dataDir.exists()) {
@@ -76,6 +78,7 @@ public class CurrencyServiceImpl implements CurrencyService {
                 row.createCell(2).setCellValue(currency.getSymbol());
                 row.createCell(3).setCellValue(currency.getIcon());
             }
+            //ghi file
             try (FileOutputStream fileOutputStream = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fileOutputStream);
                 return true;
@@ -91,12 +94,16 @@ public class CurrencyServiceImpl implements CurrencyService {
     @Override
     public List<Currency> importCurrency(MultipartFile file) throws IOException {
         List<Currency> currencies = new ArrayList<>();
-
+        //Workbook đại diện cho một bảng tính, hay một file Excel.
+        //XSSF (XML SpereadSheet Format) : Đọc và ghi định dạng file Open Office XML (XLSX - dạng excel mới).
         try (Workbook workbook = new XSSFWorkbook(file.getInputStream())){
+            //Sheet: tương đương với các sheet(bảng tính) trong file Excel, một workbook có thể có một hoặc nhiều sheet.
             Sheet sheet = workbook.getSheetAt(0);
+            //Duyệt các phần tử từ đầu đến cuối của một collection.
             Iterator<Row> rows = sheet.iterator();
-
+            //Nó trả về true nếu iterator còn phần tử kế tiếp phần tử đang duyệt.
             if(rows.hasNext()){
+                //Nó trả về phần tử hiện tại và di chuyển con trỏ trỏ tới phần tử tiếp theo.
                 rows.next();
             }
 
@@ -104,6 +111,7 @@ public class CurrencyServiceImpl implements CurrencyService {
                 Row row = rows.next();
 
                 Long idCurrency = null;
+                //Cell: mỗi một ô trong file Excel sẽ được biểu diễn bằng một row và một cell.
                 if(row.getCell(0).getCellType() == CellType.NUMERIC) {
                     idCurrency = (long) row.getCell(0).getNumericCellValue();
                 } else {

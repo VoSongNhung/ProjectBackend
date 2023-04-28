@@ -17,12 +17,22 @@ public class WalletController {
     WalletService walletServe;
     @PostMapping
     @RolesAllowed("ROLE_ADMIN")
-    public Wallet create(@RequestBody WalletDTO wallet){
-        return  walletServe.create(wallet);
+    public ResponseEntity<Wallet> create(@RequestBody WalletDTO wallet){
+        Wallet createdWallet = walletServe.create(wallet);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdWallet);
     }
+
     @GetMapping
     @RolesAllowed({"ROLE_USER","ROLE_ADMIN"})
     public ResponseEntity<?> getaAllWallet(Pageable pageable){
         return new ResponseEntity<>(walletServe.getAll(pageable), HttpStatus.OK);
+    }
+    @DeleteMapping("/{id}")
+    @RolesAllowed({"ROLE_USER","ROLE_ADMIN"})
+    public ResponseEntity<?> deleteWallet(@PathVariable Long id){
+        if(walletServe.deleteWallet(id)){
+            return new ResponseEntity<>("Deleted Successfully", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Delete failed", HttpStatus.BAD_REQUEST);
     }
 }

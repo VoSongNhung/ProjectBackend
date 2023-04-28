@@ -22,7 +22,7 @@ public class CategoryController {
     @PostMapping
     @RolesAllowed("ROLE_ADMIN")
     public ResponseEntity<?> addCategory(@RequestBody CategoryDTO categoryDTO){
-        return new ResponseEntity<>(categoryService.addCategory(categoryDTO),HttpStatus.OK);
+        return new ResponseEntity<>(categoryService.addCategory(categoryDTO),HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
     @RolesAllowed("ROLE_ADMIN")

@@ -19,22 +19,22 @@ public class CurrencyController {
     @Autowired
     CurrencyService currencyService;
 
-    @GetMapping("/getall")
+    @GetMapping
     @RolesAllowed({"ROLE_USER","ROLE_ADMIN"})
     public List<Currency> getAllCurrency(){
         return currencyService.listCurrency();
     }
-    @PostMapping("/add")
+    @PostMapping
     @RolesAllowed("ROLE_ADMIN")
-    public Currency addCCurrency(@RequestBody Currency currency){
-        return currencyService.addCurrency(currency);
+    public ResponseEntity<?> addCCurrency(@RequestBody Currency currency){
+        return ResponseEntity.status(HttpStatus.CREATED).body(currencyService.addCurrency(currency));
     }
-    @PutMapping("/update")
+    @PutMapping
     @RolesAllowed("ROLE_ADMIN")
     public Currency updateCurrency(@RequestBody Currency currency,@PathVariable Long id){
         return currencyService.updateCurrency(currency,id);
     }
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @RolesAllowed("ROLE_ADMIN")
     public void deleteCurrency(@PathVariable("id") Long id){
         currencyService.deleteCurrency(id);

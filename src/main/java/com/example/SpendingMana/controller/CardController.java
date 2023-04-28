@@ -7,6 +7,8 @@ import com.example.SpendingMana.dto.CardUpdateDTO;
 import com.example.SpendingMana.entity.Card;
 import com.example.SpendingMana.entity.CardBrand;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.security.RolesAllowed;
@@ -18,22 +20,22 @@ public class CardController {
     @Autowired
     CardService cardService;
 
-    @GetMapping("/getall")
+    @GetMapping
     @RolesAllowed({"ROLE_USER","ROLE_ADMIN"})
     public List<Card> getAllCard(){
         return cardService.listCard();
     }
-    @PostMapping("/add")
+    @PostMapping
     @RolesAllowed("ROLE_ADMIN")
-    public Card addCard(@RequestBody CardDTO cardDTO){
-        return cardService.addCard(cardDTO);
+    public ResponseEntity<?> addCard(@RequestBody CardDTO cardDTO){
+        return ResponseEntity.status(HttpStatus.CREATED).body(cardService.addCard(cardDTO));
     }
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     @RolesAllowed("ROLE_ADMIN")
     public Card updateCard(@RequestBody CardUpdateDTO cardUpdateDTO, @PathVariable Long id){
         return cardService.updateCard(cardUpdateDTO,id);
     }
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @RolesAllowed("ROLE_ADMIN")
     public void deleteCard(@PathVariable("id") Long id){
         cardService.deleteCard(id);

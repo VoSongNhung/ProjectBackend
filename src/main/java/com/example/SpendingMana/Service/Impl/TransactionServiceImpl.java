@@ -42,8 +42,11 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setWallet(wallet);
         Category category = categoryRepo.findById(transactionDTO.getCategoryId()).orElseThrow(() -> new DataNotFoundException("category not found"));
         transaction.setCategory(category);
+        if(transactionDTO.getCardId() != null){
+            Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("Card not found"));
+            transaction.setCard(card);
+        }
         transactionRespo.save(transaction);
-
         //xử lí income
         if(category.getType().equals(Type.INCOME)){
             List<Income> incomes = incomeRepo.findAll();
@@ -67,14 +70,24 @@ public class TransactionServiceImpl implements TransactionService {
 
             //update tiền bên wallet
             if(transactionDTO.getType().equals(TypeOfTransaction.CASH)){
+                if(wallet.getCash() < transactionDTO.getAmount()){
+                    new DataNotFoundException("khong du tien trong tuidocker pull metabase/metabase:latest");
+                }
+
                 wallet.setCash(wallet.getCash() + transactionDTO.getAmount());
                 wallet.setTotal(wallet.getTotal() + transactionDTO.getAmount());
                 walletRepo.save(wallet);
+
+
             }else {
-                Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
+                Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("Card not found"));
+                if(card.getAmount() < transactionDTO.getAmount()){
+                    new DataNotFoundException("khong du tien trong the");
+                }
                 card.setAmount(card.getAmount() + transactionDTO.getAmount());
                 wallet.setCreadit(wallet.getCreadit() + transactionDTO.getAmount());
                 wallet.setTotal(wallet.getTotal() + transactionDTO.getAmount());
+                cardRepo.save(card);
                 walletRepo.save(wallet);
             }
         }
@@ -102,18 +115,24 @@ public class TransactionServiceImpl implements TransactionService {
 
             //update tiền bên wallet
             if(transactionDTO.getType().equals(TypeOfTransaction.CASH)){
+                if(wallet.getCash() < transactionDTO.getAmount()){
+                    new DataNotFoundException("khong du tien trong tui");
+                }
                 wallet.setCash(wallet.getCash() - transactionDTO.getAmount());
                 wallet.setTotal(wallet.getTotal() - transactionDTO.getAmount());
                 walletRepo.save(wallet);
             }else {
-                Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
+                Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("Card not found"));
+                if(wallet.getCash() < transactionDTO.getAmount()){
+                    new DataNotFoundException("khong du tien trong thẻ");
+                }
                 card.setAmount(card.getAmount() - transactionDTO.getAmount());
                 wallet.setCreadit(wallet.getCreadit() - transactionDTO.getAmount());
                 wallet.setTotal(wallet.getTotal() - transactionDTO.getAmount());
+                cardRepo.save(card);
                 walletRepo.save(wallet);
             }
         }
-
         return transaction;
     }
 
@@ -130,86 +149,164 @@ public class TransactionServiceImpl implements TransactionService {
 //;        Wallet wallet = walletRepo.findById(transactionDTO.getWalletId()).orElseThrow(() -> new DataNotFoundException("wallet not found"));
         Wallet wallet = transaction.getWallet();
         Category category = categoryRepo.findById(transactionDTO.getCategoryId()).orElseThrow(() -> new DataNotFoundException("category not found"));
+
 //        Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
 
         // kiểm tra xem category là loại nào
         // điều kiện đang check là category loại income
+        // check category có bị thay đổi không
+        if(!category.getType().equals(transaction.getCategory().getType())){
 
-        if(category.getType().equals(Type.INCOME)){
-            // kiểm tra xem phương thức thanh toán là tiền túi hay thẻ
-            //điều kiện đang check là thanh toán bằng tiền túi
-
-            if(transactionDTO.getType().equals(TypeOfTransaction.CASH)){
-                //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
-                if(transactionDTO.getAmount() > transaction.getAmount()){
-                    wallet.setCash(wallet.getCash() + (transactionDTO.getAmount() - transaction.getAmount()));
+            if(transaction.getCategory().getType().equals(Type.EXPENSE)){
+                if(transaction.getType().equals(TypeOfTransaction.CASH)){
+                    wallet.setCash(wallet.getCash() + transaction.getAmount() + transactionDTO.getAmount());
                 }
-                //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
-                else if(transactionDTO.getAmount() < transaction.getAmount()){
-                    wallet.setCash(wallet.getCash() - (transaction.getAmount() - transactionDTO.getAmount()));
+                else {
+                    Card card = transaction.getCard();
+                    Card card1 = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
+                    if(card.getCardId().equals(transactionDTO.getCardId())){
+                        card.setAmount(card.getAmount() + transaction.getAmount() + transactionDTO.getAmount());
+                    }
+                    else {
+                        card.setAmount(card.getAmount() + transaction.getAmount());
+                        card1.setAmount(card1.getAmount() + transactionDTO.getAmount());
+                        cardRepo.save(card1);
+                    }
+//                    wallet.setCreadit(wallet.getCreadit() - transaction.getAmount() - transactionDTO.getAmount());
+                    cardRepo.save(card);
+                    transaction.setCard(card1);
                 }
             }
-            //điều kiện đang check là thanh toán bằng tiền thẻ
             else {
-                Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
-                //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
-                if (!card.getCardId().equals(transaction.getCard().getCardId())){
-                    Card card1 = transaction.getCard();
-                    card1.setAmount(card1.getAmount() - transaction.getAmount());
-                    cardRepo.save(card1);
+                if(transaction.getType().equals(TypeOfTransaction.CASH)){
+                    wallet.setCash(wallet.getCash() - transaction.getAmount() - transactionDTO.getAmount());
                 }
-                if(transactionDTO.getAmount() > transaction.getAmount()){
-                    card.setAmount(card.getAmount() + (transactionDTO.getAmount() - transaction.getAmount()));
-                    wallet.setCreadit(wallet.getCreadit() + (transactionDTO.getAmount() - transaction.getAmount()));
+                else {
+                    Card card = transaction.getCard();
+                    Card card1 = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
+                    if(card.getCardId().equals(transactionDTO.getCardId())){
+                        card.setAmount(card.getAmount() - transaction.getAmount() - transactionDTO.getAmount());
+                    }
+                    else {
+                        card.setAmount(card.getAmount() - transaction.getAmount());
+                        card1.setAmount(card1.getAmount() - transactionDTO.getAmount());
+                        cardRepo.save(card1);
+                    }
+//                    wallet.setCreadit(wallet.getCreadit() - transaction.getAmount() - transactionDTO.getAmount());
+                    cardRepo.save(card);
+                    transaction.setCard(card1);
                 }
-                //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
-                else if(transactionDTO.getAmount() < transaction.getAmount()){
-                    card.setAmount(card.getAmount() - (transactionDTO.getAmount() - transaction.getAmount()));
-                    wallet.setCreadit(wallet.getCreadit() - (transaction.getAmount() - transactionDTO.getAmount()));
-                }
-                cardRepo.save(card);
             }
         }
-        // điều kiện đang check là category loại outcome
         else {
-            if(transactionDTO.getType().equals(TypeOfTransaction.CASH)){
-                //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
-                if(transactionDTO.getAmount() > transaction.getAmount()){
-                    wallet.setCash(wallet.getCash() - (transactionDTO.getAmount() - transaction.getAmount()));
+            if(category.getType().equals(Type.INCOME)){
+                // kiểm tra xem phương thức thanh toán là tiền túi hay thẻ
+                //điều kiện đang check là thanh toán bằng tiền túi
+
+                if(transaction.getType().equals(TypeOfTransaction.CASH)){
+                    //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
+                    if(transactionDTO.getAmount() > transaction.getAmount()){
+                        wallet.setCash(wallet.getCash() + (transactionDTO.getAmount() - transaction.getAmount()));
+                    }
+                    //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
+                    else if(transactionDTO.getAmount() < transaction.getAmount()){
+                        wallet.setCash(wallet.getCash() - (transaction.getAmount() - transactionDTO.getAmount()));
+                    }
+                    wallet.setTotal(wallet.getCash() + wallet.getCreadit());
                 }
-                //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
-                else if(transactionDTO.getAmount() < transaction.getAmount()){
-                    wallet.setCash(wallet.getCash() + (transaction.getAmount() - transactionDTO.getAmount()));
+                //điều kiện đang check là thanh toán bằng tiền thẻ
+                else {
+                    Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
+                    Card card1 = transaction.getCard();
+                    //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
+                    if (!card.getCardId().equals(transactionDTO.getCardId())){
+                        card1.setAmount(card1.getAmount() - transaction.getAmount());
+                        card.setAmount(card.getAmount() + transactionDTO.getAmount());
+                        cardRepo.save(card1);
+                    }
+                    else {
+                        if(transactionDTO.getAmount() > transaction.getAmount()){
+                            card.setAmount(card.getAmount() + (transactionDTO.getAmount() - transaction.getAmount()));
+//                        wallet.setCreadit(wallet.getCreadit() + (transactionDTO.getAmount() - transaction.getAmount()));
+                        }
+                        //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
+                        else if(transactionDTO.getAmount() < transaction.getAmount()){
+                            card.setAmount(card.getAmount() - (transactionDTO.getAmount() - transaction.getAmount()));
+//                        wallet.setCreadit(wallet.getCreadit() - (transaction.getAmount() - transactionDTO.getAmount()));
+                        }
+                    }
+//                    if(transactionDTO.getAmount() > transaction.getAmount()){
+//                        card.setAmount(card.getAmount() + (transactionDTO.getAmount() - transaction.getAmount()));
+////                        wallet.setCreadit(wallet.getCreadit() + (transactionDTO.getAmount() - transaction.getAmount()));
+//                    }
+//                    //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
+//                    else if(transactionDTO.getAmount() < transaction.getAmount()){
+//                        card.setAmount(card.getAmount() - (transactionDTO.getAmount() - transaction.getAmount()));
+////                        wallet.setCreadit(wallet.getCreadit() - (transaction.getAmount() - transactionDTO.getAmount()));
+//                    }
+                    wallet.setTotal(wallet.getCash() + wallet.getCreadit());
+                    cardRepo.save(card);
+                    transaction.setCard(card);
                 }
             }
-            //điều kiện đang check là thanh toán bằng tiền thẻ
+            // điều kiện đang check là category loại outcome
             else {
-                Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
-                //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
-                if (!card.getCardId().equals(transaction.getCard().getCardId())){
-                    Card card1 = transaction.getCard();
-                    card1.setAmount(card1.getAmount() + transaction.getAmount());
-                    cardRepo.save(card1);
+                if(transaction.getType().equals(TypeOfTransaction.CASH)){
+                    //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
+                    if(transactionDTO.getAmount() > transaction.getAmount()){
+                        wallet.setCash(wallet.getCash() - (transactionDTO.getAmount() - transaction.getAmount()));
+                    }
+                    //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
+                    else if(transactionDTO.getAmount() < transaction.getAmount()){
+                        wallet.setCash(wallet.getCash() + (transaction.getAmount() - transactionDTO.getAmount()));
+                    }
                 }
-                if(transactionDTO.getAmount() > transaction.getAmount()){
-                    card.setAmount(card.getAmount() - (transactionDTO.getAmount() - transaction.getAmount()));
-                    wallet.setCash(wallet.getCreadit() - (transactionDTO.getAmount() - transaction.getAmount()));
+                //điều kiện đang check là thanh toán bằng tiền thẻ
+                else {
+                    //nếu tiền sau khi update lớn hơn ban đầu thì phải xử lí lại
+                    Card card = cardRepo.findById(transactionDTO.getCardId()).orElseThrow(() -> new DataNotFoundException("card not found"));
+                    if (!card.getCardId().equals(transaction.getCard().getCardId())){
+                        Card card1 = transaction.getCard();
+                        card1.setAmount(card1.getAmount() + transaction.getAmount());
+                        card.setAmount(card.getAmount() - transactionDTO.getAmount());
+                        cardRepo.save(card1);
+                    }
+                    else {
+                        if(transactionDTO.getAmount() > transaction.getAmount()){
+                            card.setAmount(card.getAmount() - (transactionDTO.getAmount() - transaction.getAmount()));
+                        }
+                        //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
+                        else if(transactionDTO.getAmount() < transaction.getAmount()){
+                            card.setAmount(card.getAmount() + (transactionDTO.getAmount() - transaction.getAmount()));
+                        }
+                    }
+//                    if(transactionDTO.getAmount() > transaction.getAmount()){
+//                        card.setAmount(card.getAmount() - (transactionDTO.getAmount() - transaction.getAmount()));
+////                        wallet.setCreadit(wallet.getCreadit() - (transactionDTO.getAmount() - transaction.getAmount()));
+//                    }
+//                    //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
+//                    else if(transactionDTO.getAmount() < transaction.getAmount()){
+//                        card.setAmount(card.getAmount() + (transactionDTO.getAmount() - transaction.getAmount()));
+////                        wallet.setCreadit(wallet.getCreadit() + (transaction.getAmount() - transactionDTO.getAmount()));
+//                    }
+                    cardRepo.save(card);
+                    transaction.setCard(card);
                 }
-                //nếu tiền sau khi update nhỏ hơn ban đầu thì phải xử lí lại
-                else if(transactionDTO.getAmount() < transaction.getAmount()){
-                    card.setAmount(card.getAmount() + (transactionDTO.getAmount() - transaction.getAmount()));
-                    wallet.setCash(wallet.getCreadit() + (transaction.getAmount() - transactionDTO.getAmount()));
-                }
-                cardRepo.save(card);
             }
         }
+        List<Card> cards = cardRepo.findAll();
+        int total = 0;
+        for (Card card : cards){
+            total = total + card.getAmount();
+        }
+        wallet.setCreadit(total);
         wallet.setTotal(wallet.getCash() + wallet.getCreadit());
-        walletRepo  .save(wallet);
+        walletRepo.save(wallet);
 
-        transaction.setDate(transactionDTO.getDate());
+//        transaction.setDate(transactionDTO.getDate());
         transaction.setAmount(transactionDTO.getAmount());
         transaction.setNote(transactionDTO.getNote());
-        transaction.setType(transactionDTO.getType());
+//        transaction.setType(transactionDTO.getType());
         transaction.setCategory(category);
         transactionRespo.save(transaction);
         return true;

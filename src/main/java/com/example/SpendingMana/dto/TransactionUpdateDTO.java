@@ -10,10 +10,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionUpdateDTO {
-    private LocalDate date;
     private String note;
     private Integer amount;
-    private TypeOfTransaction type;
     private Long categoryId;
     private Long cardId;
 }

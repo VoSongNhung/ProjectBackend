@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 public class WalletDTO {
     private String icon;
     private Integer cash;
-    private Integer creadit;
     private Long currencyId;
-    private Long keycloakId;
+    private Long userId;
 }

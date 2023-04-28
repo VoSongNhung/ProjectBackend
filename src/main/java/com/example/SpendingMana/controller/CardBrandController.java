@@ -17,25 +17,29 @@ public class CardBrandController {
     @Autowired
     CardBrandService cardBrandService;
 
-    @GetMapping("/getall")
-    @RolesAllowed({"ROLE_USER","ROLE_ADMIN"})
-    public List<CardBrand> getAllCardBrand(){
+    @GetMapping
+    @RolesAllowed({"ROLE_USER", "ROLE_ADMIN"})
+    public List<CardBrand> getAllCardBrand() {
         return cardBrandService.listCardBrand();
     }
-    @PostMapping("/add")
+
+    @PostMapping
     @RolesAllowed("ROLE_ADMIN")
-    public CardBrand addCardBrand(@RequestBody CardBrand cardBrand){
-        return cardBrandService.addCardBrand(cardBrand);
-    }
-    @PutMapping("/update/{id}")
-    @RolesAllowed("ROLE_ADMIN")
-    public CardBrand updateCardBrand(@RequestBody CardBrand currency,@PathVariable Long id){
-        return cardBrandService.updateCardBrand(currency,id);
-    }
-    @DeleteMapping("/delete/{id}")
-    @RolesAllowed("ROLE_ADMIN")
-    public void deleteCardBrand(@PathVariable("id") Long id){
-        cardBrandService.deleteCardBrand(id);
+    public ResponseEntity<?> addCardBrand(@RequestBody CardBrand cardBrand) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cardBrandService.addCardBrand(cardBrand));
     }
 
+    @PutMapping("/{id}")
+    @RolesAllowed("ROLE_ADMIN")
+    public CardBrand updateCardBrand(@RequestBody CardBrand currency, @PathVariable Long id) {
+        return cardBrandService.updateCardBrand(currency, id);
+    }
+
+    @DeleteMapping("/{id}")
+    @RolesAllowed("ROLE_ADMIN")
+    public void deleteCardBrand(@PathVariable("id") Long id) {
+        cardBrandService.deleteCardBrand(id);
+    }
 }
+
+
